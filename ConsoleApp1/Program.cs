@@ -79,45 +79,57 @@ namespace Data
     }        
     public class AttackStruc
     {
-        public int attackID { get; set; }
-        public string attackName { get; set; }
-        public int attackDamage { get; set; }
-        public int coolDown { get; set; }
-        public int currentCoolDown { get; set; }
+        public int AttackID { get; set; }
+        public string AttackName { get; set; }
+        public int AttackDamage { get; set; }
+        public int CoolDown { get; set; }
+        public int CurrentCoolDown { get; set; }
 
-        public AttackStruc(int attackID, string attackName, int attackDamage, int coolDown, int currentCoolDown)
+        public AttackStruc(int attackID, string attackName, int attackDamage, int coolDown, int currentCoolDown, string AttackName, int CurrentCoolDown, int AttackCooldown, string AttackActionDialogue)
         {
-            this.attackID = attackID;
-            this.attackName = attackName;
-            this.attackDamage = attackDamage;
-            this.coolDown = coolDown;
-            this.currentCoolDown = currentCoolDown;
+            this.AttackID = attackID;
+            this.AttackName = attackName;
+            this.AttackDamage = attackDamage;
+            this.CoolDown = coolDown;
+            this.CurrentCoolDown = currentCoolDown;
+        }
+    }
+    public class DialogueChoices {
+        public string failTalk;
+        public string succTalk; 
+        public string[] talk;
+        public DialogueChoices(string failTalk, string succTalk, string[] talk){
+            this.failTalk = failTalk;
+            this.succTalk = succTalk;
+            this.talk = talk;
         }
     }
     public class EnemyStruc
     {
-        public int enemyID { get; set; }
-        public int enemyHealth { get; set; }
-        public string enemyName { get; set; }
+        public int EnemyID { get; set; }
+        public int EnemyHealth { get; set; }
+        public string EnemyName { get; set; }
         public int gold { get; set; }
-        public string disposition { get; set; }
-        public AttackStruc[] attacks { get; set; }
+        public string Disposition { get; set; }
+        public AttackStruc[] Attacks { get; set; }
         public int[] position { get; set; }
-        public int initiative { get; set; }
+        public int Initiative { get; set; }
         public string[] AggressionStatement { get; set; }
+        public DialogueChoices EnemyDialogue { get; set;}
         public bool Defeated { get; set;}
-        public EnemyStruc(int enemyID, int enemyHealth, string enemyName, int gold, string disposition, AttackStruc[] attacks, int[] position, int initiative, string[] AggressionStatement, bool Defeated)
+        public EnemyStruc(int enemyID, int enemyHealth, string enemyName, int gold, string disposition, AttackStruc[] attacks, int[] position, int initiative, string[] AggressionStatement, DialogueChoices EnemyDialogue,bool Defeated)
         {
-            this.enemyID = enemyID;
-            this.enemyHealth = enemyHealth;
-            this.enemyName = enemyName;
+            this.EnemyID = enemyID;
+            this.EnemyHealth = enemyHealth;
+            this.EnemyName = enemyName;
             this.gold = gold;
-            this.disposition = disposition;
-            this.attacks = attacks;
+            this.Disposition = disposition;
+            this.Attacks = attacks;
             this.position = position;
-            this.initiative = initiative;
+            this.Initiative = initiative;
             this.AggressionStatement = AggressionStatement;
             this.Defeated = Defeated;
+            this.EnemyDialogue = EnemyDialogue;
         }
     }
     public class StoreData(int storeID, int gold, ItemStruc[] items)
@@ -271,11 +283,11 @@ namespace RPG
                 enemyName: "Rat",
                 gold: 15,
                 disposition: "Hate",
-            attacks: new[]
-            {
-                new AttackStruc(attackID: 1, attackName: "Bite", attackDamage: 1, coolDown: 3, currentCoolDown: 0),
-                new AttackStruc(attackID: 2, attackName: "Scratch", attackDamage: 1, coolDown: 1, currentCoolDown: 0),
-            },
+                attacks: new[]
+                {
+                    new AttackStruc(attackID: 1, attackName: "Bite", attackDamage: 1, coolDown: 3, currentCoolDown: 0),
+                    new AttackStruc(attackID: 2, attackName: "Scratch", attackDamage: 1, coolDown: 1, currentCoolDown: 0),
+                },
                 position: new[] {5, 5},
                 initiative: 0,
                 AggressionStatement:
@@ -284,7 +296,17 @@ namespace RPG
                     "Critch Critch",
                     "Eungh"
                 ],         
-                Defeated: false               
+                Defeated: false,   
+                EnemyDialogue: new DialogueChoices(
+                    failTalk: "Im a fucking rat bro?",
+                    succTalk: "I have found god and will leave",
+                    talk : new[]
+                    {
+                        "Sceech?",
+                        "ritch ritch",
+                        "*it grooms its head*",
+                    }                    
+                )        
             ),
             new EnemyStruc(
                 enemyID: 2,
@@ -305,7 +327,17 @@ namespace RPG
                     "Skelibi Rizz",
                     "Crackle Crunch"
                 ],
-                Defeated: false             
+                Defeated: false,  
+                EnemyDialogue: new DialogueChoices(
+                    failTalk: "Die human",
+                    succTalk: "I never wanted this...",
+                    talk : new[]
+                    {
+                        "Torment...",
+                        "These bones never heal",
+                        "*it attempts to sob*",
+                    }
+                )                             
             ),
         ];
         
@@ -398,12 +430,12 @@ namespace RPG
             {
                 if (engageFight(enemy))
                 {
-                    Console.WriteLine($"{enemy.enemyName} Defeated! {enemy.gold} Gold Acquired!");
+                    Console.WriteLine($"{enemy.EnemyName} Defeated! {enemy.gold} Gold Acquired!");
                     Explore();
                 } 
                 else 
                 {
-                    Console.WriteLine($"Clearly the {enemy.enemyName} Was too strong");
+                    Console.WriteLine($"Clearly the {enemy.EnemyName} Was too strong");
                     AFK();
                 }
             }
@@ -427,37 +459,54 @@ namespace RPG
             }
         }
         public static bool engageFight(EnemyStruc enemy){
-            bool playerTurn = enemy.initiative > userData.initiative ? false : true ;
+            bool playerTurn = enemy.Initiative > userData.initiative ? false : true ;
             int playerHealth = userData.playerHealth;
-            Console.WriteLine($"You encounter a enemy {enemy.enemyName} it {enemy.disposition}s you!");
+            Console.WriteLine($"You encounter a enemy {enemy.EnemyName} it {enemy.Disposition}s you!");
             Console.WriteLine($"{(playerTurn ? "Looks like your faster, First turn is yours" : "Its Quick!")}");
             // battle logic
-            while (playerHealth > 0 && enemy.enemyHealth > 0) {
+            while (playerHealth > 0 && enemy.EnemyHealth > 0) {
                 if (playerTurn){
                     Console.WriteLine("Ready to attack, Type the attack name to attack, Type talk to attempt diplomacy, Type Run to attempts to flee");
                     for (int i = 0; i < userData.playerAttacks.Length; i++){
-                        Console.WriteLine($"\n Attack: {userData.playerAttacks[i].attackName} Damage: {userData.playerAttacks[i].attackDamage} " +
-                        $"{(userData.playerAttacks[i].currentCoolDown == 0 ? "Ready" : $"On cooldown: {userData.playerAttacks[i].currentCoolDown}")}");
+                        Console.WriteLine($"\n Attack: {userData.playerAttacks[i].AttackName} Damage: {userData.playerAttacks[i].AttackDamage} " +
+                        $"{(userData.playerAttacks[i].CurrentCoolDown == 0 ? "Ready" : $"On cooldown: {userData.playerAttacks[i].CurrentCoolDown}")}");
                     }
                     string choice = Console.ReadLine();
                     if (choice == "Run")
                     {
                         Explore();
                     }
-                    else 
+                    else if (choice == "talk")
                     {
-                        var attack = userData.playerAttacks.FirstOrDefault((attack) => attack.attackName == choice);
-                        if (attack.currentCoolDown > 0){
+                        if (enemy.Disposition == "Hate"){
+                            Console.WriteLine(enemy.EnemyDialogue.failTalk);
+                            enemy.Disposition = "neutral";
+                        }
+                        else if (enemy.Disposition == "neutral")
+                        {   
+                            Random random = new Random();
+                            int randomIndex = random.Next(enemy.EnemyDialogue.talk.Length);
+                            Console.WriteLine(enemy.EnemyDialogue.talk[randomIndex]);
+                        } 
+                        else 
+                        {
+                            Console.WriteLine(enemy.AggressionStatement[0]);
+                        };
+                    }
+                    else
+                    {
+                        var attack = userData.playerAttacks.FirstOrDefault((attack) => attack.AttackName.ToLower() == choice.ToLower());
+                        if (attack.CurrentCoolDown > 0){
                             Console.WriteLine("Attack is still cooling down! Dont get careless now LOOK OUT!");
                             playerTurn = false;
                         } else {
-                            enemy.enemyHealth -= attack.attackDamage;
-                            attack.currentCoolDown = attack.coolDown + 1;
-                            Console.WriteLine($"You hit for {attack.attackDamage}! {enemy.enemyName}'s Health is reduced {attack.attackDamage} to {enemy.enemyHealth} HP");
+                            enemy.EnemyHealth -= attack.AttackDamage;
+                            attack.CurrentCoolDown = attack.CoolDown + 1;
+                            Console.WriteLine($"You hit for {attack.AttackDamage}! {enemy.EnemyName}'s Health is reduced {attack.AttackDamage} to {enemy.EnemyHealth} HP");
                         }
                     };
                     for (int i = 0; i < userData.playerAttacks.Length; i++){
-                        userData.playerAttacks[i].currentCoolDown = Math.Max(0, userData.playerAttacks[i].currentCoolDown - 1);
+                        userData.playerAttacks[i].CurrentCoolDown = Math.Max(0, userData.playerAttacks[i].CurrentCoolDown - 1);
                     }
                     playerTurn = false;
                 }
@@ -465,21 +514,27 @@ namespace RPG
                     Console.WriteLine("Enemy turn!");
                     Random random = new Random();
                     int randomIndex = random.Next(enemy.AggressionStatement.Length);
-                    var Attacks = enemy.attacks;
+                    bool hasAttacked = false;
+                    var Attacks = enemy.Attacks;
                     for (int i = 0; i < Attacks.Length; i++){
-                        if (Attacks[i].currentCoolDown == 0){
+                        if (Attacks[i].CurrentCoolDown == 0){
                             Console.WriteLine($"{enemy.AggressionStatement[randomIndex]}");
-                            playerHealth -= Attacks[i].attackDamage;
-                            Attacks[i].currentCoolDown = Attacks[i].coolDown;
-                            Console.WriteLine($"You are hit with a {Attacks[i].attackName} for {Attacks[i].attackDamage}! current health is {playerHealth}");
+                            playerHealth -= Attacks[i].AttackDamage;
+                            Attacks[i].CurrentCoolDown = Attacks[i].CoolDown;
+                            Console.WriteLine($"You are hit with a {Attacks[i].AttackName} for {Attacks[i].AttackDamage}! current health is {playerHealth}");
+                            hasAttacked = true;
                             break;
                         }
                     }
                     Console.WriteLine($"{enemy.AggressionStatement[randomIndex]}");
+                    if (!hasAttacked){
+                        Console.WriteLine($"{enemy.EnemyName} Is recovering their attacks!");
+                    }
+                    
                     playerTurn = true;
                 }
             }
-            if (playerHealth > 0 && playerHealth > enemy.enemyHealth){
+            if (playerHealth > 0 && playerHealth > enemy.EnemyHealth){
                 userData.gold += enemy.gold;
                 enemy.Defeated = true;
                 return true;
