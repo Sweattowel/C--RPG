@@ -24,9 +24,10 @@ namespace PlayerStructures
         public int Level { get; set; }
         public int Reputation { get; set; }
         public int Speed { get; set; }
+        public int[] Inventory { get; set; }
         public string PlayerName { get; set; }
         public AttackStruc[] PlayerAttacks { get; set; }
-        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, string PlayerName, AttackStruc[] PlayerAttacks)
+        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, int[] Inventory, string PlayerName, AttackStruc[] PlayerAttacks)
         {
             this.PlayerHealth = PlayerHealth;
             this.Gold = Gold;
@@ -34,6 +35,7 @@ namespace PlayerStructures
             this.Level = Level;
             this.Reputation = Reputation;
             this.Speed = Speed;
+            this.Inventory = Inventory;
             this.PlayerName = PlayerName;
             this.PlayerAttacks = PlayerAttacks;
         }
@@ -52,9 +54,13 @@ namespace PlayerData
             Level: 0,
             Reputation: 0,
             Speed: 10,
+            Inventory: [0,0],
             PlayerName: "Thoams",
             PlayerAttacks: new AttackStruc[]
             {
+                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
+                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
+                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
                 new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!")
             }
         );

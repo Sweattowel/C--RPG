@@ -1,16 +1,16 @@
-using NPCStructures;
-
 namespace NPCStructures
 {
     public class AttackStruc 
     {
         public int AttackID { get; set; }
+        public int AttackDamage { get; set; }
         public string AttackName { get; set; }
         public int CurrentCoolDown { get; set; }
         public int AttackCooldown { get; set; }
         public string AttackActionDialogue { get; set; }
-        public AttackStruc(int AttackID, string AttackName, int CurrentCoolDown, int AttackCooldown, string AttackActionDialogue){
+        public AttackStruc(int AttackID,int AttackDamage, string AttackName, int CurrentCoolDown, int AttackCooldown, string AttackActionDialogue){
             this.AttackID = AttackID;
+            this.AttackDamage = AttackDamage;
             this.AttackName = AttackName;
             this.CurrentCoolDown = CurrentCoolDown;
             this.AttackCooldown = AttackCooldown;
@@ -28,12 +28,25 @@ namespace NPCStructures
             this.Like = Like;
         }
     }
+    public class ResponseOption
+    {
+        public string ResponseText { get; set; }
+        public int NextDialogueID { get; set; }
+
+        public ResponseOption(string responseText, int nextDialogueID)
+        {
+            this.ResponseText = responseText;
+            this.NextDialogueID = nextDialogueID;
+        }
+    }
     public class DialogueTree
     {
         public int DialogueID { get; set; }
-        public string DialogueText { get; set; }
-        public string[] Responses { get; set; }
-        public DialogueTree(int DialogueID, string DialogueText, string[] Responses){
+        public string DialogueText { get; set; }        
+        public ResponseOption[] Responses { get; set; }
+
+        public DialogueTree(int DialogueID, string DialogueText, ResponseOption[] Responses)
+        {
             this.DialogueID = DialogueID;
             this.DialogueText = DialogueText;
             this.Responses = Responses;
@@ -48,10 +61,11 @@ namespace NPCStructures
         public int Speed { get; set; }
         public int Gold { get; set; }
         public int Experience { get; set; }
+        public int[] Inventory { get; set; }
         public BaseNPCResponseStruc BaseResponse { get; set; }
         public DialogueTree[] DialogueTrees { get; set; }
         public AttackStruc[] Attacks { get; set; }
-        public NPCStruc(int ID, string Name, int Disposition, BaseNPCResponseStruc BaseResponse, AttackStruc[] Attacks, DialogueTree[] dialogueTrees, int Health, int Speed, int Gold, int Experience){
+        public NPCStruc(int ID, string Name, int Disposition, BaseNPCResponseStruc BaseResponse, AttackStruc[] Attacks, DialogueTree[] DialogueTrees, int Health, int Speed, int Gold, int Experience, int[] Inventory){
             this.ID = ID;
             this.Name = Name;
             this.Disposition = Disposition;
@@ -62,12 +76,13 @@ namespace NPCStructures
             this.Speed = Speed;
             this.Gold = Gold;
             this.Experience = Experience;
+            this.Inventory = Inventory;
         }
         public class BattleResult
         {
             public int GoldWon { get; set; }
             public int ExperienceWon { get; set; }
-            public String ResultDialogue { get; set; }
+            public required String ResultDialogue { get; set; }
         }
         public static BattleResult BeginFight(PlayerStructures.PlayerStruc Player, NPCStruc Enemy){
             Boolean playerTurn = false;
@@ -107,13 +122,16 @@ namespace NPCStructures
         }        
     }
 }
+
 namespace NPCData
 {
+    using NPCStructures;
+    using PlayerData;
     public class NPCDefinition
     {
-        public static NPCStructures.NPCStruc[] NPCS  = new NPCStructures.NPCStruc[] 
+        public static NPCStruc[] NPCS  = new NPCStruc[] 
         {
-            new NPCStructures.NPCStruc(
+            new NPCStruc(
                 ID: 0,
                 Name: "Jeeves",
                 Disposition: 10, 
@@ -121,51 +139,137 @@ namespace NPCData
                 Speed: 25,
                 Gold: 450,
                 Experience: 8,
-                BaseResponse: new NPCStructures.BaseNPCResponseStruc(
-                    Hate: ["test H"],
-                    Neutral: ["test N"],
-                    Like: ["test L"]
+                Inventory: [1,1,1,1],
+                BaseResponse: new BaseNPCResponseStruc(
+                    Hate: ["I'm dissapointed"],
+                    Neutral: ["..."],
+                    Like: ["Good Day"]
                 ),
                 Attacks: new AttackStruc[]
                 {
-                    new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites down HARD"),
-                    new AttackStruc(AttackID: 1, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Swings wildly with a sharp claw"),
-                    new AttackStruc(AttackID: 2, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "Lets out a terrifying roar"),
-                    new AttackStruc(AttackID: 3, AttackName: "Sting", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Stings with a venomous barb"),
-                    new AttackStruc(AttackID: 4, AttackName: "Charge", CurrentCoolDown: 0, AttackCooldown: 4, AttackActionDialogue: "Charges forward with great force")
+                    new AttackStruc(AttackID: 0, AttackDamage: 2, AttackName: "Artful bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites with poise and class"),
+                    new AttackStruc(AttackID: 1, AttackDamage: 3, AttackName: "High class High Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Slashes with a rehearsed swing"),
+                    new AttackStruc(AttackID: 2, AttackDamage: 1, AttackName: "Stinging Words", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "Condemns Your actions from a higher caste"),
+                    new AttackStruc(AttackID: 3, AttackDamage: 1, AttackName: "Roulette Kick", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Roulette Kick"),
+                    new AttackStruc(AttackID: 4, AttackDamage: 1, AttackName: "Accident", CurrentCoolDown: 0, AttackCooldown: 4, AttackActionDialogue: "Gets into his rolls royce and Runs you over")
                 },
-                dialogueTrees: new NPCStructures.DialogueTree[]
+                DialogueTrees: new DialogueTree[]
                 {
-                    new NPCStructures.DialogueTree(DialogueID: 0, DialogueText: "Hey Boyo", Responses: ["Hey Jeevs How are you", "Fuck off", "Bye"]),
+                    new DialogueTree
+                    (
+                        DialogueID: 0, 
+                        DialogueText: $"Evening {playerCharacter.Player.PlayerName}", 
+                        Responses: new ResponseOption[] 
+                        { 
+                            new ResponseOption("Goodbye", 1),
+                            new ResponseOption("Hey Jeeves, how are you?", 2),
+                            new ResponseOption("Leave me alone.", 3)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 1, 
+                        DialogueText: "Goodbye!", 
+                        Responses: new ResponseOption[] { }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 2, 
+                        DialogueText: "I'm well, thank you.", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Great!", 3),
+                            new ResponseOption("Whatever.", 3)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 3, 
+                        DialogueText: "That's rude!", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Sorry.", 3),
+                            new ResponseOption("I don't care.", 3)
+                        }
+                    ),
                 }
             ),
-            new NPCStructures.NPCStruc(
+            new NPCStruc(
                 ID: 1,
                 Name: "Jason",
-                Disposition: 5,  
+                Disposition: 7,  
                 Health: 8,
                 Speed: 8,
-                Gold: 50,
-                Experience: 8,     
-                BaseResponse: new NPCStructures.BaseNPCResponseStruc(
-                    Hate: ["test H"],
-                    Neutral: ["test N"],
-                    Like: ["test L"]
+                Gold: 0,
+                Experience: 14,
+                Inventory: [3],    
+                BaseResponse: new BaseNPCResponseStruc(
+                    Hate: ["Not cool, hope your head starts hurting"],
+                    Neutral: ["I hope my head doesnt start hurting"],
+                    Like: ["Hope your head doesnt start hurting"]
                 ),
                 Attacks: new AttackStruc[]
                 {
-                    new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites down HARD"),
-                    new AttackStruc(AttackID: 1, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Swings wildly with a sharp claw"),
-                    new AttackStruc(AttackID: 2, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "Lets out a terrifying roar"),
-                    new AttackStruc(AttackID: 3, AttackName: "Sting", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Stings with a venomous barb"),
-                    new AttackStruc(AttackID: 4, AttackName: "Charge", CurrentCoolDown: 0, AttackCooldown: 4, AttackActionDialogue: "Charges forward with great force")
+                    new AttackStruc(AttackID: 0, AttackDamage: 1, AttackName: "Artful bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites your head"),
+                    new AttackStruc(AttackID: 1, AttackDamage: 3, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Swings at your head"),
+                    new AttackStruc(AttackID: 2, AttackDamage: 1, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Yells in your ear thats connected to your head"),
+                    new AttackStruc(AttackID: 3, AttackDamage: 2, AttackName: "Sting", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Stings your head with a stinging front fist"),
+                    new AttackStruc(AttackID: 4, AttackDamage: 4, AttackName: "Hit", CurrentCoolDown: 0, AttackCooldown: 4, AttackActionDialogue: "Hits you, you most likely know where")
                 },
-                dialogueTrees: new NPCStructures.DialogueTree[]
+                DialogueTrees: new DialogueTree[]
                 {
-                    new NPCStructures.DialogueTree(DialogueID: 0, DialogueText: "sup...", Responses: ["Hey...", "Fight?", "Bye"]),
+                    new DialogueTree
+                    (
+                        DialogueID: 0, 
+                        DialogueText: "Whats up brah", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Goodbye.", 1),
+                            new ResponseOption("Got hit in the head recently", 2)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 1, 
+                        DialogueText: "Catch ya", 
+                        Responses: new ResponseOption[]
+                        {
+
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 2, 
+                        DialogueText: "Ouch.", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Goodbye.", 1),
+                            new ResponseOption("I got hit in the head ya know?", 3)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 3, 
+                        DialogueText: "Sucks man", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Goodbye.", 1),
+                            new ResponseOption("Head hurts", 4)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 4, 
+                        DialogueText: "Damn what happened dude?", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Goodbye.", 1),
+                            new ResponseOption("i got hit in the head or something like that", 2)
+                        }
+                    ),
                 }
             ),
-            new NPCStructures.NPCStruc(
+            new NPCStruc(
                 ID: 2,
                 Name: "Jona",
                 Disposition: 0, 
@@ -173,22 +277,48 @@ namespace NPCData
                 Speed: 4,
                 Gold: 100,
                 Experience: 8,
-                BaseResponse: new NPCStructures.BaseNPCResponseStruc(
-                    Hate: ["test H"],
-                    Neutral: ["test N"],
-                    Like: ["test L"]
+                Inventory: [1,2,2],
+                BaseResponse: new BaseNPCResponseStruc(
+                    Hate: ["..."],
+                    Neutral: ["I neutrally dont like you"],
+                    Like: ["... cya"]
                 ),
                 Attacks: new AttackStruc[]
                 {
-                    new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites down HARD"),
-                    new AttackStruc(AttackID: 1, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Swings wildly with a sharp claw"),
-                    new AttackStruc(AttackID: 2, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "Lets out a terrifying roar"),
-                    new AttackStruc(AttackID: 3, AttackName: "Sting", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Stings with a venomous barb"),
-                    new AttackStruc(AttackID: 4, AttackName: "Charge", CurrentCoolDown: 0, AttackCooldown: 4, AttackActionDialogue: "Charges forward with great force")
+                    new AttackStruc(AttackID: 0, AttackDamage: 2, AttackName: "Punch", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Punches you in the teeth"),
+                    new AttackStruc(AttackID: 1, AttackDamage: 2, AttackName: "Cut", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Cuts deep with his blade"),
+                    new AttackStruc(AttackID: 2, AttackDamage: 5, AttackName: "Kick", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "Hits you with a kick to the solar plexus"),
                 },
-                dialogueTrees: new NPCStructures.DialogueTree[]
+                DialogueTrees: new DialogueTree[]
                 {
-                    new NPCStructures.DialogueTree(DialogueID: 0, DialogueText: "Go away?", Responses: ["Rude...", "Ill kick your ass", "Bye"]),
+                    new DialogueTree
+                    (
+                        DialogueID: 0, 
+                        DialogueText: "Go away", 
+                        Responses: new ResponseOption[]
+                        {
+                            new ResponseOption("Goodbye.", 1),
+                            new ResponseOption("ermm i..", 2)
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 1, 
+                        DialogueText: "...", 
+                        Responses: new ResponseOption[]
+                        {
+
+                        }
+                    ),
+                    new DialogueTree
+                    (
+                        DialogueID: 2, 
+                        DialogueText: "Dont pick stupid dialogue options that have clear cutoffs", 
+                        Responses: new ResponseOption[]
+                        {
+
+                        }
+                    ),
                 }
             ),
         };
