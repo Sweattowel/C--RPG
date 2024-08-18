@@ -34,8 +34,8 @@ namespace ItemData
                 ItemDesc:"Useless...",
                 GoldValue:1,
                 ItemType:"MISC",
-                Effect:"NONE",
-                EffectValue:0
+                Effect:"THROW",
+                EffectValue:-1
             ),
             new ItemStruct(
                 ItemID:1,
@@ -52,8 +52,8 @@ namespace ItemData
                 ItemDesc:"A shiny jewel, does no damage and is too fragile to be used in anything, sell it to a collector for 50 GOLD",
                 GoldValue:50,
                 ItemType:"VALU",
-                Effect:"NONE",
-                EffectValue:0
+                Effect:"THROW",
+                EffectValue: 1
             ),
             new ItemStruct(
                 ItemID:3,
@@ -61,8 +61,8 @@ namespace ItemData
                 ItemDesc:"Appears uselss, but scrap of this quality is easily recycled, sell for a high value of 100 GOLD",
                 GoldValue:100,
                 ItemType:"MISC",
-                Effect:"NONE",
-                EffectValue:0
+                Effect:"THROW",
+                EffectValue: 5
             ),
         };
     }

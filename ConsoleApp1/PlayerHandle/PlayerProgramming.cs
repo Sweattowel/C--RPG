@@ -3,17 +3,28 @@ namespace PlayerStructures
     public class AttackStruc 
     {
         public int AttackID { get; set; }
+        public int AttackDamage { get; set; }
         public string AttackName { get; set; }
         public int CurrentCoolDown { get; set; }
         public int AttackCooldown { get; set; }
         public string AttackActionDialogue { get; set; }
-        public AttackStruc(int AttackID, string AttackName, int CurrentCoolDown, int AttackCooldown, string AttackActionDialogue)
-        {
+        public AttackStruc(int AttackID,int AttackDamage, string AttackName, int CurrentCoolDown, int AttackCooldown, string AttackActionDialogue){
             this.AttackID = AttackID;
+            this.AttackDamage = AttackDamage;
             this.AttackName = AttackName;
             this.CurrentCoolDown = CurrentCoolDown;
             this.AttackCooldown = AttackCooldown;
             this.AttackActionDialogue = AttackActionDialogue;
+        }
+    }
+    public class PlayerInventoryItem
+    {
+        public int ItemID { get; set; }
+        public int ItemCount { get; set;}
+        public PlayerInventoryItem(int ItemID, int ItemCount)
+        {
+            this.ItemID = ItemID;
+            this.ItemCount = ItemCount;
         }
     }
     public class PlayerStruc
@@ -24,10 +35,10 @@ namespace PlayerStructures
         public int Level { get; set; }
         public int Reputation { get; set; }
         public int Speed { get; set; }
-        public int[] Inventory { get; set; }
+        public PlayerInventoryItem[] Inventory { get; set; }
         public string PlayerName { get; set; }
         public AttackStruc[] PlayerAttacks { get; set; }
-        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, int[] Inventory, string PlayerName, AttackStruc[] PlayerAttacks)
+        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, PlayerInventoryItem[] Inventory, string PlayerName, AttackStruc[] PlayerAttacks)
         {
             this.PlayerHealth = PlayerHealth;
             this.Gold = Gold;
@@ -54,14 +65,17 @@ namespace PlayerData
             Level: 0,
             Reputation: 0,
             Speed: 10,
-            Inventory: [0,0],
+            Inventory: new PlayerInventoryItem[]
+            {
+                new PlayerInventoryItem(ItemID:0, ItemCount: 2)
+            },
             PlayerName: "Thoams",
             PlayerAttacks: new AttackStruc[]
             {
-                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
-                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
-                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
-                new AttackStruc(AttackID: 0, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!")
+                new AttackStruc(AttackID: 1, AttackDamage: 1, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "ORY yum!"),
+                new AttackStruc(AttackID: 2, AttackDamage: 3, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
+                new AttackStruc(AttackID: 1, AttackDamage: 2, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "ORY yum!"),
+                new AttackStruc(AttackID: 4, AttackDamage: 5, AttackName: "Strong Kick", CurrentCoolDown: 0, AttackCooldown: 5, AttackActionDialogue: "ORY yum!")
             }
         );
     }

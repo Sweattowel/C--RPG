@@ -1,5 +1,6 @@
 using ItemData;
 using ItemStructures;
+using PlayerStructures;
 
 namespace NPCStructures
 {
@@ -97,10 +98,13 @@ namespace NPCStructures
             public int ExperienceWon { get; set; }
             public required string ResultDialogue { get; set; }
         }
-        public static BattleResult BeginFight(PlayerStructures.PlayerStruc Player, NPCStruc Enemy){
+        public static BattleResult BeginFight(PlayerStruc Player, NPCStruc Enemy){
+            int PlayerMaxHealth = Player.PlayerHealth;
             int EnemyMaxHealth = Enemy.Health;
             bool playerTurn = false;
             bool Win = false;
+            bool fightCancel = false;
+
             Console.WriteLine($"You encounter an enemy {Enemy.Name}, ");
             if (Player.Speed > Enemy.Speed){
                 playerTurn = true;
@@ -108,9 +112,9 @@ namespace NPCStructures
             } else {
                 Console.WriteLine("You're too SLOW, Watch out!'");
             }
-            while (Player.PlayerHealth > 0 && Enemy.Health > 0)
+            while (Player.PlayerHealth > 0 && Enemy.Health > 0 && fightCancel == false)
             {
-                if (playerTurn)
+                while (playerTurn)
                 {   
                     Console.WriteLine("PLAYER TURN");
                     Console.WriteLine("Type 1 to choose Attack, Type 2 to check and use Items, Type 3 to talk, Type 4 to attempt to flee");
@@ -118,14 +122,94 @@ namespace NPCStructures
                     switch (response)
                     {
                         case "1":
+                            Console.WriteLine($"Type Attack name to use attack");
+                            for (int i = 0; i < Player.PlayerAttacks.Length; i++)
+                            {
+                                PlayerStructures.AttackStruc CurrAttack = Player.PlayerAttacks[i];
+                                string coolDownDialogue = "";
+                                if (CurrAttack.CurrentCoolDown > 0){
+                                    coolDownDialogue = $"Cooling down {CurrAttack.CurrentCoolDown} turns left";
+                                } else {
+                                    coolDownDialogue = $"CD: {CurrAttack.AttackCooldown}";
+                                }
+                                Console.WriteLine($"Attack: {CurrAttack.AttackName} Damage: {CurrAttack.AttackDamage} {coolDownDialogue}");
+                            }
+                            string AttackChoice = Console.ReadLine()!;
+                            if (AttackChoice != null)
+                            {
+                                PlayerStructures.AttackStruc SelectedAttack = Player.PlayerAttacks.First((attack) => attack.AttackName.ToLower() == AttackChoice.ToLower());
+
+                                if (SelectedAttack.CurrentCoolDown != 0)
+                                {
+                                    Console.WriteLine($"You use {SelectedAttack.AttackName} Against {Enemy.Name} Dealing {SelectedAttack.AttackDamage} Damage reducing enemy health from {Enemy.Health} to {Enemy.Health - SelectedAttack.AttackDamage}");
+                                    Enemy.Health -= SelectedAttack.AttackDamage;
+                                    SelectedAttack.CurrentCoolDown = SelectedAttack.AttackCooldown;
+                                    playerTurn = false;
+                                }
+                                else 
+                                {
+                                    Console.WriteLine("Blunder, Turn lost");
+                                    playerTurn = false;
+                                }
+                            }
+                            break;
+                        case "2":
+                            Console.WriteLine("Type itemName to use");
+                            for (int i = 0; i < Player.Inventory.Length; i++)
+                            {
+                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemID == Player.Inventory[i].ItemID);
+                                Console.WriteLine($"ITEM {CurrItem.ItemName} EFFECT {CurrItem.Effect} EFFECT POWER {CurrItem.EffectValue} VALUE {CurrItem.GoldValue}");
+                            }
+                            string itemChoice = Console.ReadLine()!;
+                            if (itemChoice != null)
+                            {
+                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemName == itemChoice);
+                                switch (CurrItem.Effect)
+                                {
+                                    case "HEAL":
+                                        Player.PlayerHealth = Math.Min(Player.PlayerHealth + CurrItem.EffectValue, PlayerMaxHealth);
+                                        Console.WriteLine($"You heal for ${CurrItem.EffectValue} HP Current health is {Player.PlayerHealth}");
+                                        PlayerInventoryItem HealItemToDecrement = Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
+                                            HealItemToDecrement.ItemCount -= 1;
+                                        break;
+                                    case "MISC":
+                                        Console.WriteLine($"You are confused and throw whatever you hold, {CurrItem.ItemName} is thrown dealing {CurrItem.EffectValue} Damage, wasting {CurrItem.GoldValue} Gold");
+                                        PlayerInventoryItem MiscItemToDecrement = Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
+                                            MiscItemToDecrement.ItemCount -= 1;
+                                        break;
+                                    default:
+                                        Console.WriteLine("You trip opening your inventory, turn lost");
+                                        break;
+                                }
+                            }
+                            break;
+                        case "3":
+                            switch (Enemy.Disposition)
+                            {
+                                case >=7:
+                                    Console.WriteLine($"{Enemy.BaseResponse.Like}");
+                                    break;
+                                case >= 3:
+                                    Console.WriteLine($"{Enemy.BaseResponse.Hate}");
+                                    break;
+                                default:
+                                    Console.WriteLine($"{Enemy.BaseResponse.Neutral}");
+                                    break;
+                            }
+                            break;
+                        case "4":
+                            fightCancel = true;
                             break;
                         default:
+                            Console.WriteLine("You trip and fall over");
                             break;
                     }
+                    playerTurn = false;
                 }
-                if (!playerTurn)
+                while (!playerTurn)
                 {
-                    Console.WriteLine($"{Enemy.Name}'S TURN");
+                    Console.WriteLine($"{Enemy.Name}'S TURN HP: {Enemy.Health}");
+                    Console.WriteLine($"{Enemy.BaseResponse.Hate}");
                     if (Enemy.Health <= EnemyMaxHealth / 2 && Enemy.Inventory.Length > 0){
                         for (int i = 0; i < Enemy.Inventory.Length ; i++)
                         {
@@ -138,13 +222,36 @@ namespace NPCStructures
                                     Enemy.Inventory = Enemy.Inventory.Where(item => item.ItemCount > 0).ToArray();
                                 }
                                 Console.WriteLine($"{Enemy.Name} Has healed {Heal.EffectValue} to {Enemy.Health}");
+                                playerTurn = true;
                                 break;
                             }
                         }
                     }
+                    for (int i = 0; i < Enemy.Attacks.Length; i++)
+                    {
+                        AttackStruc Attack = Enemy.Attacks[i];
+                        if (Attack.CurrentCoolDown == 0)
+                        {
+                            Player.PlayerHealth -= Attack.AttackDamage;
+                            Console.WriteLine($"{Enemy.Name} {Attack.AttackActionDialogue}, You received {Attack.AttackDamage}, your health is now {Player.PlayerHealth}");
+                            playerTurn = true;
+                            break;
+                        }
+                    }
                 }
             }
-            if (Win){
+            if (Player.PlayerHealth > Enemy.Health && Player.PlayerHealth > 0){
+                Win = true;
+            } 
+            if (fightCancel)
+            {
+                return new BattleResult() 
+                {
+                    GoldWon = 0, 
+                    ExperienceWon = 1, 
+                    ResultDialogue = "You ran"
+                };  
+            } else if (Win){
                 return new BattleResult() 
                 {
                     GoldWon = Enemy.Gold, 
@@ -257,7 +364,7 @@ namespace NPCData
                 ),
                 Attacks: new AttackStruc[]
                 {
-                    new AttackStruc(AttackID: 0, AttackDamage: 1, AttackName: "Artful bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites your head"),
+                    new AttackStruc(AttackID: 0, AttackDamage: 1, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Bites your head"),
                     new AttackStruc(AttackID: 1, AttackDamage: 3, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Swings at your head"),
                     new AttackStruc(AttackID: 2, AttackDamage: 1, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "Yells in your ear thats connected to your head"),
                     new AttackStruc(AttackID: 3, AttackDamage: 2, AttackName: "Sting", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "Stings your head with a stinging front fist"),
