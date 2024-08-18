@@ -1,3 +1,6 @@
+using ItemData;
+using ItemStructures;
+
 namespace NPCStructures
 {
     public class AttackStruc 
@@ -52,6 +55,16 @@ namespace NPCStructures
             this.Responses = Responses;
         }
     }
+    public class NPCInventoryItem
+    {
+        public int ItemID { get; set; }
+        public int ItemCount { get; set;}
+        public NPCInventoryItem(int ItemID, int ItemCount)
+        {
+            this.ItemID = ItemID;
+            this.ItemCount = ItemCount;
+        }
+    }
     public class NPCStruc
     {
         public int ID { get; set;}
@@ -61,11 +74,11 @@ namespace NPCStructures
         public int Speed { get; set; }
         public int Gold { get; set; }
         public int Experience { get; set; }
-        public int[] Inventory { get; set; }
+        public NPCInventoryItem[] Inventory { get; set; }
         public BaseNPCResponseStruc BaseResponse { get; set; }
         public DialogueTree[] DialogueTrees { get; set; }
         public AttackStruc[] Attacks { get; set; }
-        public NPCStruc(int ID, string Name, int Disposition, BaseNPCResponseStruc BaseResponse, AttackStruc[] Attacks, DialogueTree[] DialogueTrees, int Health, int Speed, int Gold, int Experience, int[] Inventory){
+        public NPCStruc(int ID, string Name, int Disposition, BaseNPCResponseStruc BaseResponse, AttackStruc[] Attacks, DialogueTree[] DialogueTrees, int Health, int Speed, int Gold, int Experience, NPCInventoryItem[] Inventory){
             this.ID = ID;
             this.Name = Name;
             this.Disposition = Disposition;
@@ -82,23 +95,53 @@ namespace NPCStructures
         {
             public int GoldWon { get; set; }
             public int ExperienceWon { get; set; }
-            public required String ResultDialogue { get; set; }
+            public required string ResultDialogue { get; set; }
         }
         public static BattleResult BeginFight(PlayerStructures.PlayerStruc Player, NPCStruc Enemy){
-            Boolean playerTurn = false;
-            Boolean Win = false;
+            int EnemyMaxHealth = Enemy.Health;
+            bool playerTurn = false;
+            bool Win = false;
+            Console.WriteLine($"You encounter an enemy {Enemy.Name}, ");
             if (Player.Speed > Enemy.Speed){
                 playerTurn = true;
+                Console.WriteLine("You are faster, first turn is yours");    
+            } else {
+                Console.WriteLine("You're too SLOW, Watch out!'");
             }
             while (Player.PlayerHealth > 0 && Enemy.Health > 0)
             {
                 if (playerTurn)
-                {
-
+                {   
+                    Console.WriteLine("PLAYER TURN");
+                    Console.WriteLine("Type 1 to choose Attack, Type 2 to check and use Items, Type 3 to talk, Type 4 to attempt to flee");
+                    string response = Console.ReadLine()!;
+                    switch (response)
+                    {
+                        case "1":
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 if (!playerTurn)
                 {
-
+                    Console.WriteLine($"{Enemy.Name}'S TURN");
+                    if (Enemy.Health <= EnemyMaxHealth / 2 && Enemy.Inventory.Length > 0){
+                        for (int i = 0; i < Enemy.Inventory.Length ; i++)
+                        {
+                            ItemStruct Heal = GameItemArray.GameItems.First((item) => (Enemy.Inventory[i].ItemID == item.ItemID) && (item.Effect == "HEAL"));
+                            if (Heal != null)
+                            {
+                                Enemy.Health = Math.Min(EnemyMaxHealth, Enemy.Health += Heal.EffectValue);
+                                Enemy.Inventory[i].ItemCount -= 1;
+                                if (Enemy.Inventory[i].ItemCount <= 0) {
+                                    Enemy.Inventory = Enemy.Inventory.Where(item => item.ItemCount > 0).ToArray();
+                                }
+                                Console.WriteLine($"{Enemy.Name} Has healed {Heal.EffectValue} to {Enemy.Health}");
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             if (Win){
@@ -139,7 +182,9 @@ namespace NPCData
                 Speed: 25,
                 Gold: 450,
                 Experience: 8,
-                Inventory: [1,1,1,1],
+                Inventory: new NPCInventoryItem[] {
+                    new NPCInventoryItem(ItemID: 1, ItemCount: 4),
+                }, 
                 BaseResponse: new BaseNPCResponseStruc(
                     Hate: ["I'm dissapointed"],
                     Neutral: ["..."],
@@ -202,7 +247,9 @@ namespace NPCData
                 Speed: 8,
                 Gold: 0,
                 Experience: 14,
-                Inventory: [3],    
+                Inventory: new NPCInventoryItem[] {
+                    new NPCInventoryItem(ItemID: 3, ItemCount: 1),
+                },    
                 BaseResponse: new BaseNPCResponseStruc(
                     Hate: ["Not cool, hope your head starts hurting"],
                     Neutral: ["I hope my head doesnt start hurting"],
@@ -277,7 +324,10 @@ namespace NPCData
                 Speed: 4,
                 Gold: 100,
                 Experience: 8,
-                Inventory: [1,2,2],
+                Inventory: new NPCInventoryItem[] {
+                    new NPCInventoryItem(ItemID: 1, ItemCount: 1),
+                    new NPCInventoryItem(ItemID: 2, ItemCount: 2),
+                }, 
                 BaseResponse: new BaseNPCResponseStruc(
                     Hate: ["..."],
                     Neutral: ["I neutrally dont like you"],

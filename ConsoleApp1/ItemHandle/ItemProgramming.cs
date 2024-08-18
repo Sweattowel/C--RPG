@@ -24,9 +24,9 @@ namespace ItemStructures
 namespace ItemData
 {
     using ItemStructures;
-    public class GameItems
+    public class GameItemArray
     {
-        public static ItemStruct[] GameItem = new ItemStruct[]
+        public static ItemStruct[] GameItems = new ItemStruct[]
         {
             new ItemStruct(
                 ItemID:0,
