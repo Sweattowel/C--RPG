@@ -100,23 +100,23 @@ namespace NPCStructures
             public int ExperienceWon { get; set; }
             public required string ResultDialogue { get; set; }
         }
-        public static BattleResult BeginFight(PlayerStruc Player, NPCStruc Enemy){
-            int PlayerMaxHealth = Player.PlayerHealth;
-            int EnemyMaxHealth = Enemy.Health;
+        public static BattleResult BeginFight(int EnemyID){
+            int PlayerMaxHealth = PlayerData.playerCharacter.Player.PlayerHealth;
+            int EnemyMaxHealth = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health;
             bool playerTurn = false;
             bool Win = false;
             bool fightCancel = false;
 
-            Console.WriteLine($"You encounter an enemy {Enemy.Name}, ");
-            if (Player.Speed > Enemy.Speed){
+            Console.WriteLine($"You encounter an enemy {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name}, ");
+            if (PlayerData.playerCharacter.Player.Speed > NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Speed){
                 playerTurn = true;
                 Console.WriteLine("You are faster, first turn is yours");    
             } else {
                 Console.WriteLine("You're too SLOW, Watch out!'");
             }
-            while (Player.PlayerHealth > 0 && Enemy.Health > 0 && fightCancel == false)
+            while (PlayerData.playerCharacter.Player.PlayerHealth > 0 && NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health > 0 && fightCancel == false)
             {
-                while (playerTurn)
+                while (playerTurn && !fightCancel)
                 {   
                     Console.WriteLine("PLAYER TURN");
                     Console.WriteLine("Type 1 to choose Attack, Type 2 to check and use Items, Type 3 to talk, Type 4 to attempt to flee");
@@ -125,9 +125,9 @@ namespace NPCStructures
                     {
                         case "1":
                             Console.WriteLine($"Type Attack name to use attack");
-                            for (int i = 0; i < Player.PlayerAttacks.Length; i++)
+                            for (int i = 0; i < PlayerData.playerCharacter.Player.PlayerAttacks.Length; i++)
                             {
-                                PlayerStructures.AttackStruc CurrAttack = Player.PlayerAttacks[i];
+                                PlayerStructures.AttackStruc CurrAttack = PlayerData.playerCharacter.Player.PlayerAttacks[i];
                                 string coolDownDialogue = "";
                                 if (CurrAttack.CurrentCoolDown > 0){
                                     coolDownDialogue = $"Cooling down {CurrAttack.CurrentCoolDown} turns left";
@@ -139,12 +139,12 @@ namespace NPCStructures
                             string AttackChoice = Console.ReadLine()!;
                             if (AttackChoice != null)
                             {
-                                PlayerStructures.AttackStruc SelectedAttack = Player.PlayerAttacks.First((attack) => attack.AttackName.ToLower() == AttackChoice.ToLower());
+                                PlayerStructures.AttackStruc SelectedAttack = PlayerData.playerCharacter.Player.PlayerAttacks.First((attack) => attack.AttackName.ToLower() == AttackChoice.ToLower());
 
-                                if (SelectedAttack.CurrentCoolDown != 0)
+                                if ( SelectedAttack != null && SelectedAttack.CurrentCoolDown == 0)
                                 {
-                                    Console.WriteLine($"You use {SelectedAttack.AttackName} Against {Enemy.Name} Dealing {SelectedAttack.AttackDamage} Damage reducing enemy health from {Enemy.Health} to {Enemy.Health - SelectedAttack.AttackDamage}");
-                                    Enemy.Health -= SelectedAttack.AttackDamage;
+                                    Console.WriteLine($"You use {SelectedAttack.AttackName} Against {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name} Dealing {SelectedAttack.AttackDamage} Damage reducing enemy health from {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health} to {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health - SelectedAttack.AttackDamage}");
+                                    NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health -= SelectedAttack.AttackDamage;
                                     SelectedAttack.CurrentCoolDown = SelectedAttack.AttackCooldown;
                                     playerTurn = false;
                                 }
@@ -153,30 +153,33 @@ namespace NPCStructures
                                     Console.WriteLine("Blunder, Turn lost");
                                     playerTurn = false;
                                 }
+                            } else {
+                                Console.WriteLine("You trip and break your nose");
+                                playerTurn = false;
                             }
                             break;
                         case "2":
                             Console.WriteLine("Type itemName to use");
-                            for (int i = 0; i < Player.Inventory.Length; i++)
+                            for (int i = 0; i < PlayerData.playerCharacter.Player.Inventory.Length; i++)
                             {
-                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemID == Player.Inventory[i].ItemID);
+                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemID == PlayerData.playerCharacter.Player.Inventory[i].ItemID);
                                 Console.WriteLine($"ITEM {CurrItem.ItemName} EFFECT {CurrItem.Effect} EFFECT POWER {CurrItem.EffectValue} VALUE {CurrItem.GoldValue}");
                             }
                             string itemChoice = Console.ReadLine()!;
                             if (itemChoice != null)
                             {
-                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemName == itemChoice);
+                                ItemStruct CurrItem = GameItemArray.GameItems.First((item) => item.ItemName.ToLower() == itemChoice.ToLower());
                                 switch (CurrItem.Effect)
                                 {
                                     case "HEAL":
-                                        Player.PlayerHealth = Math.Min(Player.PlayerHealth + CurrItem.EffectValue, PlayerMaxHealth);
-                                        Console.WriteLine($"You heal for ${CurrItem.EffectValue} HP Current health is {Player.PlayerHealth}");
-                                        PlayerInventoryItem HealItemToDecrement = Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
+                                        PlayerData.playerCharacter.Player.PlayerHealth = Math.Min(PlayerData.playerCharacter.Player.PlayerHealth + CurrItem.EffectValue, PlayerMaxHealth);
+                                        Console.WriteLine($"You heal for ${CurrItem.EffectValue} HP Current health is {PlayerData.playerCharacter.Player.PlayerHealth}");
+                                        PlayerInventoryItem HealItemToDecrement = PlayerData.playerCharacter.Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
                                             HealItemToDecrement.ItemCount -= 1;
                                         break;
                                     case "MISC":
                                         Console.WriteLine($"You are confused and throw whatever you hold, {CurrItem.ItemName} is thrown dealing {CurrItem.EffectValue} Damage, wasting {CurrItem.GoldValue} Gold");
-                                        PlayerInventoryItem MiscItemToDecrement = Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
+                                        PlayerInventoryItem MiscItemToDecrement = PlayerData.playerCharacter.Player.Inventory.First((item) => item.ItemID == CurrItem.ItemID);
                                             MiscItemToDecrement.ItemCount -= 1;
                                         break;
                                     default:
@@ -186,16 +189,16 @@ namespace NPCStructures
                             }
                             break;
                         case "3":
-                            switch (Enemy.Disposition)
+                            switch (NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Disposition)
                             {
                                 case >=7:
-                                    Console.WriteLine($"{Enemy.BaseResponse.Like}");
+                                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).BaseResponse.Like}");
                                     break;
                                 case >= 3:
-                                    Console.WriteLine($"{Enemy.BaseResponse.Hate}");
+                                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).BaseResponse.Hate}");
                                     break;
                                 default:
-                                    Console.WriteLine($"{Enemy.BaseResponse.Neutral}");
+                                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).BaseResponse.Neutral}");
                                     break;
                             }
                             break;
@@ -208,41 +211,43 @@ namespace NPCStructures
                     }
                     playerTurn = false;
                 }
-                while (!playerTurn)
+                while (!playerTurn && !fightCancel)
                 {
-                    Console.WriteLine($"{Enemy.Name}'S TURN HP: {Enemy.Health}");
-                    Console.WriteLine($"{Enemy.BaseResponse.Hate}");
-                    if (Enemy.Health <= EnemyMaxHealth / 2 && Enemy.Inventory.Length > 0){
-                        for (int i = 0; i < Enemy.Inventory.Length ; i++)
+                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name}'S TURN HP: {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health}");
+                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).BaseResponse.Hate}");
+                    if (NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health <= EnemyMaxHealth / 2 && NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory.Length > 0){
+                        for (int i = 0; i < NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory.Length ; i++)
                         {
-                            ItemStruct Heal = GameItemArray.GameItems.First((item) => (Enemy.Inventory[i].ItemID == item.ItemID) && (item.Effect == "HEAL"));
+                            ItemStruct Heal = GameItemArray.GameItems.First((item) => (NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory[i].ItemID == item.ItemID) && (item.Effect == "HEAL"));
                             if (Heal != null)
                             {
-                                Enemy.Health = Math.Min(EnemyMaxHealth, Enemy.Health += Heal.EffectValue);
-                                Enemy.Inventory[i].ItemCount -= 1;
-                                if (Enemy.Inventory[i].ItemCount <= 0) {
-                                    Enemy.Inventory = Enemy.Inventory.Where(item => item.ItemCount > 0).ToArray();
+                                NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health = Math.Min(EnemyMaxHealth, NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health += Heal.EffectValue);
+                                NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory[i].ItemCount -= 1;
+                                if (NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory[i].ItemCount <= 0) {
+                                    NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Inventory.Where(item => item.ItemCount > 0).ToArray();
                                 }
-                                Console.WriteLine($"{Enemy.Name} Has healed {Heal.EffectValue} to {Enemy.Health}");
+                                Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name} Has healed {Heal.EffectValue} to {NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health}");
                                 playerTurn = true;
                                 break;
                             }
                         }
                     }
-                    for (int i = 0; i < Enemy.Attacks.Length; i++)
+                    for (int i = 0; i < NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Attacks.Length; i++)
                     {
-                        AttackStruc Attack = Enemy.Attacks[i];
-                        if (Attack.CurrentCoolDown == 0)
+                        AttackStruc Attack = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Attacks[i];
+                        if (Attack != null && Attack.CurrentCoolDown == 0)
                         {
-                            Player.PlayerHealth -= Attack.AttackDamage;
-                            Console.WriteLine($"{Enemy.Name} {Attack.AttackActionDialogue}, You received {Attack.AttackDamage}, your health is now {Player.PlayerHealth}");
+                            PlayerData.playerCharacter.Player.PlayerHealth -= Attack.AttackDamage;
+                            Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name} {Attack.AttackActionDialogue}, You received {Attack.AttackDamage}, your health is now {PlayerData.playerCharacter.Player.PlayerHealth}");
                             playerTurn = true;
                             break;
                         }
                     }
+                    Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name} Is recovering, Take your strike");
+                    playerTurn = true;
                 }
             }
-            if (Player.PlayerHealth > Enemy.Health && Player.PlayerHealth > 0){
+            if (PlayerData.playerCharacter.Player.PlayerHealth > NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Health && PlayerData.playerCharacter.Player.PlayerHealth > 0){
                 Win = true;
             } 
             if (fightCancel)
@@ -256,9 +261,9 @@ namespace NPCStructures
             } else if (Win){
                 return new BattleResult() 
                 {
-                    GoldWon = Enemy.Gold, 
-                    ExperienceWon = Enemy.Experience, 
-                    ResultDialogue = Enemy.BaseResponse.Hate[0]
+                    GoldWon = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Gold, 
+                    ExperienceWon = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Experience, 
+                    ResultDialogue = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).BaseResponse.Hate[0]
                 };
             } else {
                 return new BattleResult()
@@ -269,14 +274,14 @@ namespace NPCStructures
                 };
             }
         }
-        public static void BeginTalk(NPCStruc NPC){
-            Console.WriteLine($"{NPC.Name} Stands before you");
+        public static void BeginTalk(int EnemyID){
+            Console.WriteLine($"{NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).Name} Stands before you");
             Console.WriteLine($"Write the appropriate key to select dialogue");
             bool Conversation = true;
             int CurrentID = 0;
             while (Conversation)
             {
-                DialogueTree CurrentDialogue = NPC.DialogueTrees.First((dialogue) => dialogue.DialogueID == CurrentID);
+                DialogueTree CurrentDialogue = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).DialogueTrees.First((dialogue) => dialogue.DialogueID == CurrentID);
                 Console.WriteLine($"{CurrentDialogue.DialogueText}");
                 for (int i = 0; i < CurrentDialogue.Responses.Length; i++)
                 {       
@@ -292,11 +297,14 @@ namespace NPCStructures
                     switch (chosenResponse.Action)
                     {
                         case "FIGHT":
-                            BeginFight(PlayerData.playerCharacter.Player, NPC);
-                            
+                            BattleResult Battle = BeginFight(EnemyID);
+                            Conversation = false;
                             break;
+                        case "LEAVE":
+                            Conversation = false;
+                            break;    
                         default:
-                            DialogueTree NextDialogue = NPC.DialogueTrees.First((dialogue) => dialogue.DialogueID == parsedChoice);
+                            DialogueTree NextDialogue = NPCData.NPCDefinition.NPCS.First((npc) => npc.ID == EnemyID).DialogueTrees.First((dialogue) => dialogue.DialogueID == parsedChoice);
                             
                             if (NextDialogue != null){
                                 CurrentID = NextDialogue.DialogueID;

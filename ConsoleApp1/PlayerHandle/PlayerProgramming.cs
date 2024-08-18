@@ -27,6 +27,17 @@ namespace PlayerStructures
             this.ItemCount = ItemCount;
         }
     }
+    public class PlayerPosition
+    {
+        public int PlayerX { get; set; }
+        public int PlayerY { get; set; }
+        public PlayerPosition(int PlayerX, int PlayerY)
+        {
+            this.PlayerX = PlayerX;
+            this.PlayerY = PlayerY;
+
+        }
+    }
     public class PlayerStruc
     {
         public int PlayerHealth { get; set; }
@@ -35,10 +46,11 @@ namespace PlayerStructures
         public int Level { get; set; }
         public int Reputation { get; set; }
         public int Speed { get; set; }
+        public PlayerPosition PlayerPosition { get; set; }
         public PlayerInventoryItem[] Inventory { get; set; }
         public string PlayerName { get; set; }
         public AttackStruc[] PlayerAttacks { get; set; }
-        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, PlayerInventoryItem[] Inventory, string PlayerName, AttackStruc[] PlayerAttacks)
+        public PlayerStruc(int PlayerHealth, int Gold, int Experience, int Level, int Reputation, int Speed, PlayerPosition PlayerPosition, PlayerInventoryItem[] Inventory, string PlayerName, AttackStruc[] PlayerAttacks)
         {
             this.PlayerHealth = PlayerHealth;
             this.Gold = Gold;
@@ -46,6 +58,7 @@ namespace PlayerStructures
             this.Level = Level;
             this.Reputation = Reputation;
             this.Speed = Speed;
+            this.PlayerPosition = PlayerPosition;
             this.Inventory = Inventory;
             this.PlayerName = PlayerName;
             this.PlayerAttacks = PlayerAttacks;
@@ -65,6 +78,11 @@ namespace PlayerData
             Level: 0,
             Reputation: 0,
             Speed: 10,
+            PlayerPosition: new PlayerPosition
+            (
+                PlayerX: 0,
+                PlayerY: 0
+            ),
             Inventory: new PlayerInventoryItem[]
             {
                 new PlayerInventoryItem(ItemID:0, ItemCount: 2)
@@ -75,7 +93,7 @@ namespace PlayerData
                 new AttackStruc(AttackID: 1, AttackDamage: 1, AttackName: "Bite", CurrentCoolDown: 0, AttackCooldown: 1, AttackActionDialogue: "ORY yum!"),
                 new AttackStruc(AttackID: 2, AttackDamage: 3, AttackName: "Slash", CurrentCoolDown: 0, AttackCooldown: 2, AttackActionDialogue: "ORY yum!"),
                 new AttackStruc(AttackID: 1, AttackDamage: 2, AttackName: "Roar", CurrentCoolDown: 0, AttackCooldown: 3, AttackActionDialogue: "ORY yum!"),
-                new AttackStruc(AttackID: 4, AttackDamage: 5, AttackName: "Strong Kick", CurrentCoolDown: 0, AttackCooldown: 5, AttackActionDialogue: "ORY yum!")
+                new AttackStruc(AttackID: 4, AttackDamage: 5, AttackName: "Kick", CurrentCoolDown: 0, AttackCooldown: 5, AttackActionDialogue: "ORY yum!")
             }
         );
     }
