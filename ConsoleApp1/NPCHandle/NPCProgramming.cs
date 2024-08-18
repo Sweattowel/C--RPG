@@ -37,10 +37,12 @@ namespace NPCStructures
         public string ResponseText { get; set; }
         public int NextDialogueID { get; set; }
 
-        public ResponseOption(string responseText, int nextDialogueID)
+        public string Action {get; set;}
+        public ResponseOption(string responseText, int nextDialogueID, string Action)
         {
             this.ResponseText = responseText;
             this.NextDialogueID = nextDialogueID;
+            this.Action = Action;
         }
     }
     public class DialogueTree
@@ -267,8 +269,43 @@ namespace NPCStructures
                 };
             }
         }
-        public static void BeginTalk(){
+        public static void BeginTalk(NPCStruc NPC){
+            Console.WriteLine($"{NPC.Name} Stands before you");
+            Console.WriteLine($"Write the appropriate key to select dialogue");
+            bool Conversation = true;
+            int CurrentID = 0;
+            while (Conversation)
+            {
+                DialogueTree CurrentDialogue = NPC.DialogueTrees.First((dialogue) => dialogue.DialogueID == CurrentID);
+                Console.WriteLine($"{CurrentDialogue.DialogueText}");
+                for (int i = 0; i < CurrentDialogue.Responses.Length; i++)
+                {       
+                    Console.WriteLine($"{CurrentDialogue.Responses[i].NextDialogueID}: {CurrentDialogue.Responses[i].ResponseText}");
+                }
+                string Choice = Console.ReadLine()!;
+                if (Choice != null)
+                {
+                    int parsedChoice = Int32.Parse(Choice);
+                    
+                    ResponseOption chosenResponse = CurrentDialogue.Responses.First((response) => response.NextDialogueID == parsedChoice);
 
+                    switch (chosenResponse.Action)
+                    {
+                        case "FIGHT":
+                            BeginFight(PlayerData.playerCharacter.Player, NPC);
+                            
+                            break;
+                        default:
+                            DialogueTree NextDialogue = NPC.DialogueTrees.First((dialogue) => dialogue.DialogueID == parsedChoice);
+                            
+                            if (NextDialogue != null){
+                                CurrentID = NextDialogue.DialogueID;
+                            }                        
+                        break;
+                    }
+
+                }
+            }
         }        
     }
 }
@@ -313,16 +350,18 @@ namespace NPCData
                         DialogueText: $"Evening {playerCharacter.Player.PlayerName}", 
                         Responses: new ResponseOption[] 
                         { 
-                            new ResponseOption("Goodbye", 1),
-                            new ResponseOption("Hey Jeeves, how are you?", 2),
-                            new ResponseOption("Leave me alone.", 3)
+                            new ResponseOption(responseText: "Goodbye",nextDialogueID: 1, Action: "TALK"),
+                            new ResponseOption(responseText: "Hey Jeeves, how are you?", nextDialogueID: 2, Action: "TALK"),
+                            new ResponseOption(responseText: "Leave me alone.", nextDialogueID: 3, Action: "LEAVE")
                         }
                     ),
                     new DialogueTree
                     (
                         DialogueID: 1, 
                         DialogueText: "Goodbye!", 
-                        Responses: new ResponseOption[] { }
+                        Responses: new ResponseOption[] {
+                            new ResponseOption(responseText: "", nextDialogueID: -1, Action: "LEAVE")
+                         }
                     ),
                     new DialogueTree
                     (
@@ -330,8 +369,8 @@ namespace NPCData
                         DialogueText: "I'm well, thank you.", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Great!", 3),
-                            new ResponseOption("Whatever.", 3)
+                            new ResponseOption("Great!", 3, Action: "TALK"),
+                            new ResponseOption("Whatever.", 3, "TALK")
                         }
                     ),
                     new DialogueTree
@@ -340,8 +379,8 @@ namespace NPCData
                         DialogueText: "That's rude!", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Sorry.", 3),
-                            new ResponseOption("I don't care.", 3)
+                            new ResponseOption("Sorry.", 3, "TALK"),
+                            new ResponseOption("I don't care.", 3, "TALK")
                         }
                     ),
                 }
@@ -378,8 +417,8 @@ namespace NPCData
                         DialogueText: "Whats up brah", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Goodbye.", 1),
-                            new ResponseOption("Got hit in the head recently", 2)
+                            new ResponseOption("Goodbye.", 1, "LEAVE"),
+                            new ResponseOption("Got hit in the head recently", 2, "TALK")
                         }
                     ),
                     new DialogueTree
@@ -388,7 +427,7 @@ namespace NPCData
                         DialogueText: "Catch ya", 
                         Responses: new ResponseOption[]
                         {
-
+                            new ResponseOption("", 1, "LEAVE"),
                         }
                     ),
                     new DialogueTree
@@ -397,8 +436,8 @@ namespace NPCData
                         DialogueText: "Ouch.", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Goodbye.", 1),
-                            new ResponseOption("I got hit in the head ya know?", 3)
+                            new ResponseOption("Goodbye.", 1, "LEAVE"),
+                            new ResponseOption("I got hit in the head ya know?", 3, "TALK")
                         }
                     ),
                     new DialogueTree
@@ -407,8 +446,8 @@ namespace NPCData
                         DialogueText: "Sucks man", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Goodbye.", 1),
-                            new ResponseOption("Head hurts", 4)
+                            new ResponseOption("Goodbye.", 1, "LEAVE"),
+                            new ResponseOption("Head hurts", 4, "TALK")
                         }
                     ),
                     new DialogueTree
@@ -417,8 +456,8 @@ namespace NPCData
                         DialogueText: "Damn what happened dude?", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Goodbye.", 1),
-                            new ResponseOption("i got hit in the head or something like that", 2)
+                            new ResponseOption("Goodbye.", 1, "LEAVE"),
+                            new ResponseOption("i got hit in the head or something like that", 2, "TALK")
                         }
                     ),
                 }
@@ -454,8 +493,8 @@ namespace NPCData
                         DialogueText: "Go away", 
                         Responses: new ResponseOption[]
                         {
-                            new ResponseOption("Goodbye.", 1),
-                            new ResponseOption("ermm i..", 2)
+                            new ResponseOption("Goodbye.", 1, "LEAVE"),
+                            new ResponseOption("ermm i..", 2, "TALK")
                         }
                     ),
                     new DialogueTree
@@ -464,7 +503,7 @@ namespace NPCData
                         DialogueText: "...", 
                         Responses: new ResponseOption[]
                         {
-
+                            new ResponseOption("", 1, "LEAVE"),
                         }
                     ),
                     new DialogueTree
@@ -473,7 +512,7 @@ namespace NPCData
                         DialogueText: "Dont pick stupid dialogue options that have clear cutoffs", 
                         Responses: new ResponseOption[]
                         {
-
+                            new ResponseOption("", 1, "LEAVE"),
                         }
                     ),
                 }
