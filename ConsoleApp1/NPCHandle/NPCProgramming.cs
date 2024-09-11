@@ -333,9 +333,9 @@ namespace NPCStructures
                 // Display the current dialogue text and responses
                 Console.WriteLine(currentDialogue.DialogueText);
 
-                foreach (var response in currentDialogue.Responses)
+                for (int i = 0; i < currentDialogue.Responses.Length; i++)
                 {
-                    Console.WriteLine($"{response.NextDialogueID}: {response.ResponseText}");
+                    Console.WriteLine($"{i + 1}: {currentDialogue.Responses[i].ResponseText}");
                 }
 
                 // Read player choice
@@ -345,9 +345,10 @@ namespace NPCStructures
                     Console.WriteLine("Invalid choice, please enter a number.");
                     continue;
                 }
+                int choiceID = currentDialogue.Responses[parsedChoice - 1].NextDialogueID;
 
                 // Find the chosen response
-                var chosenResponse = currentDialogue.Responses.FirstOrDefault(response => response.NextDialogueID == parsedChoice);
+                var chosenResponse = currentDialogue.Responses.FirstOrDefault(response => response.NextDialogueID == choiceID);
 
                 if (chosenResponse == null)
                 {
@@ -371,7 +372,7 @@ namespace NPCStructures
 
                     default:
                         // Navigate to the next dialogue
-                        var nextDialogue = npc.DialogueTrees.FirstOrDefault(dialogue => dialogue.DialogueID == parsedChoice);
+                        var nextDialogue = npc.DialogueTrees.FirstOrDefault(dialogue => dialogue.DialogueID == choiceID);
 
                         if (nextDialogue != null && nextDialogue.DialogueID != -1)
                         {

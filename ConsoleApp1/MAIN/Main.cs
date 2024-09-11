@@ -22,6 +22,7 @@ namespace ConsoleRPG
             switch (choice.ToLower())
             {
                 case"1":
+                MapCreation.REVEALMAP();
                 EXPLORE();
                 break;
                 case"2":
