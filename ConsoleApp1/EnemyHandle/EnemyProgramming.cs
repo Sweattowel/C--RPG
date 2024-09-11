@@ -1,4 +1,4 @@
-namespace EnemyHandle
+namespace NpcHandle
 {
     public class AttackStruc
     {
@@ -24,24 +24,24 @@ namespace EnemyHandle
         public string[] talk;
     }
 
-    public class EnemyStruc
+    public class NpcStruc
     {
-        public int EnemyID { get; set; }
-        public int EnemyHealth { get; set; }
-        public string EnemyName { get; set; }
+        public int NpcID { get; set; }
+        public int NpcHealth { get; set; }
+        public string NpcName { get; set; }
         public int gold { get; set; }
         public string Disposition { get; set; }
         public AttackStruc[] Attacks { get; set; }
         public int[] position { get; set; }
         public int Initiative { get; set; }
         public string[] AggressionStatement { get; set; }
-        public DialogueChoices EnemyDialogue { get; set;}
+        public DialogueChoices NpcDialogue { get; set;}
         public bool Defeated { get; set;}
-        public EnemyStruc(int enemyID, int enemyHealth, string enemyName, int gold, string disposition, AttackStruc[] attacks, int[] position, int initiative, string[] AggressionStatement, DialogueChoices EnemyDialogue,bool Defeated)
+        public NpcStruc(int NpcID, int NpcHealth, string NpcName, int gold, string disposition, AttackStruc[] attacks, int[] position, int initiative, string[] AggressionStatement, DialogueChoices NpcDialogue,bool Defeated)
         {
-            this.EnemyID = enemyID;
-            this.EnemyHealth = enemyHealth;
-            this.EnemyName = enemyName;
+            this.NpcID = NpcID;
+            this.NpcHealth = NpcHealth;
+            this.NpcName = NpcName;
             this.gold = gold;
             this.Disposition = disposition;
             this.Attacks = attacks;
@@ -49,12 +49,12 @@ namespace EnemyHandle
             this.Initiative = initiative;
             this.AggressionStatement = AggressionStatement;
             this.Defeated = Defeated;
-            this.EnemyDialogue = EnemyDialogue;
+            this.NpcDialogue = NpcDialogue;
         }
     }
 
 }
-namespace EnemyData
+namespace NpcData
 {
     
 }

@@ -62,7 +62,24 @@ namespace ConsoleRPG
             MapCreation.REVEALMAP();
             MapStructure.MapStruc CurrentLocation = MapCreation.CHECKLOCATION();
             if (CurrentLocation.EnemiesHere.Length > 0){
-                NPCStruc.BattleResult result = NPCStruc.BeginFight(CurrentLocation.EnemiesHere[0]);
+                var npcHere = NPCData.NPCDefinition.NPCS.FirstOrDefault(n => n.ID == CurrentLocation.EnemiesHere[0]);
+                
+                NPCStruc.NpcResult result = new()
+                {
+                    GoldWon = 0,
+                    ExperienceWon = 0,
+                    ResultDialogue  = ""
+                };
+                
+                switch (npcHere!.Disposition)
+                {
+                    case > 3:
+                        result = NPCStruc.BeginTalk(npcHere.ID);
+                    break;
+                    default:
+                        result = NPCStruc.BeginFight(npcHere.ID);
+                        break;
+                }
                 if (result.ExperienceWon > 0){
                     EXPLORE();
                 } else {
