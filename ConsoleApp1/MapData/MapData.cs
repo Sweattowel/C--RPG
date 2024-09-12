@@ -39,6 +39,7 @@ namespace MapData
 {
     using MapStructure;
     using PlayerData;
+    using PlayerStructures;
 
     public class MapCreation
     {
@@ -116,5 +117,20 @@ namespace MapData
         {
             return MAPDATA[playerCharacter.Player.PlayerPosition.PlayerY, playerCharacter.Player.PlayerPosition.PlayerX];
         }
+    }
+    public class MapMove
+    {
+        
+        public static PlayerPosition HandleExplore(PlayerPosition newPosition)
+        {
+            return newPosition switch
+            {
+                { PlayerX: < 0 } => new PlayerPosition(9, newPosition.PlayerY),
+                { PlayerX: > 9 } => new PlayerPosition(0, newPosition.PlayerY),
+                { PlayerY: < 0 } => new PlayerPosition(newPosition.PlayerX, 9),
+                { PlayerY: > 9 } => new PlayerPosition(newPosition.PlayerX, 0),
+                _ => newPosition
+            };
+        }     
     }
 }

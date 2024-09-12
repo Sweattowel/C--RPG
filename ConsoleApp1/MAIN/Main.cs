@@ -5,6 +5,7 @@ namespace ConsoleRPG
     using PlayerData;
     using ItemStructures;
     using NPCStructures;
+    using PlayerStructures;
 
     public class Mainloop
     {
@@ -42,18 +43,25 @@ namespace ConsoleRPG
         {
             Console.WriteLine("Type the corresponding direction to travel: UP DOWN LEFT RIGHT");
             string choice = Console.ReadLine()!;
+            PlayerPosition currPos =  new(playerCharacter.Player.PlayerPosition.PlayerX, playerCharacter.Player.PlayerPosition.PlayerY);
+            
             switch (choice.ToUpper()){
+                // TODO Generate new map when going up and add to preexisting map if possible
                 case "UP":
-                    playerCharacter.Player.PlayerPosition.PlayerY -= 1;
+                    currPos.PlayerY -= 1;
+                    playerCharacter.Player.PlayerPosition = MapMove.HandleExplore(currPos);
                 break;
                 case "LEFT":
-                    playerCharacter.Player.PlayerPosition.PlayerX -= 1;
+                    currPos.PlayerX -= 1;
+                    playerCharacter.Player.PlayerPosition = MapMove.HandleExplore(currPos);
                 break;
                 case "RIGHT":
-                    playerCharacter.Player.PlayerPosition.PlayerX += 1;
+                    currPos.PlayerX += 1;
+                    playerCharacter.Player.PlayerPosition = MapMove.HandleExplore(currPos);
                 break;
                 case "DOWN":
-                    playerCharacter.Player.PlayerPosition.PlayerY += 1;
+                    currPos.PlayerY += 1;
+                    playerCharacter.Player.PlayerPosition = MapMove.HandleExplore(currPos);
 
                 break;
                 default:
